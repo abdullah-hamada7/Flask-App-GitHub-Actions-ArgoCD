@@ -50,8 +50,9 @@ jobs:
 
       - name: Update Manifest File
         run: |
-          kubectl set image deployment/myapp-deploy myapp=abdullahhamada7/flask-k8s:${{ github.sha }} --local -o yaml > k8s/deploy.yml.new
-          mv k8s/deploy.yml.new k8s/deploy.yml
+            
+            kubectl set image -f k8s/deploy.yml deployment/myapp-deploy myapp=***/flask-k8s:${{ github.sha }} --local -o yaml > k8s/deploy.yml.new
+            mv k8s/deploy.yml.new k8s/deploy.yml
       
       - name: Commit Updated Manifest
         if: success()
