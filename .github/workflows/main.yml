@@ -1,4 +1,4 @@
-name: CI - Build and Push
+name: Complete CI/CD Pipeline
 
 on:
   push:
@@ -57,7 +57,7 @@ jobs:
       - name: Update Kubernetes manifest
         run: |
           kubectl set image -f k8s/deploy.yml \
-            deployment/myapp-deploy myapp=abdullahhamada7/flask-k8s:${{ github.sha }} \
+            myapp=abdullahhamada7/flask-k8s:${{ github.sha }} \
             --local -o yaml > k8s/deploy.yml.new
           mv k8s/deploy.yml.new k8s/deploy.yml
 
