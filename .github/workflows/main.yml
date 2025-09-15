@@ -54,7 +54,7 @@ jobs:
           mv k8s/deploy.yml.new k8s/deploy.yml
 
       - name: Deploy to Kubernetes
-        uses: appleboy/k8s-action@v0.2.0
+        uses: appleboy/kubectl-action@v1.0.1
         with:
           kubeconfig: ${{ secrets.KUBECONFIG }}
           manifests: |
