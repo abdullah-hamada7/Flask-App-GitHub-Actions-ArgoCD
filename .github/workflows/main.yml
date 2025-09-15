@@ -1,13 +1,15 @@
-name: Test and Build
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
       - main
     paths:
-      - '**/*'
+      - '**.py'
+      - 'k8s/**'
+      - 'Dockerfile'
+      - 'requirements.txt'
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -48,12 +50,18 @@ jobs:
             abdullahhamada7/flask-k8s:latest
             abdullahhamada7/flask-k8s:${{ github.sha }}
 
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
       - name: Update Manifest File
         run: |
-            
-            kubectl set image -f k8s/deploy.yml deployment/myapp-deploy myapp=abdullahhamada7/flask-k8s:${{ github.sha }} --local -o yaml > k8s/deploy.yml.new
-            mv k8s/deploy.yml.new k8s/deploy.yml
-      
+          kubectl set image -f k8s/deploy.yml \
+            deployment/myapp-deploy myapp=abdullahhamada7/flask-k8s:${{ github.sha }} \
+            --local -o yaml > k8s/deploy.yml.new
+          mv k8s/deploy.yml.new k8s/deploy.yml
+
       - name: Commit Updated Manifest
         if: success()
         run: |
@@ -62,10 +70,8 @@ jobs:
           git add k8s/deploy.yml
           
           if git diff --staged --quiet; then
-            echo "No changes to the manifest to commit."
+            echo "No changes to commit."
           else
-            # Add [skip ci] to the commit message to prevent an infinite loop
             git commit -m "Update deployment image to ${{ github.sha }} [skip ci]"
             git push
           fi
-
