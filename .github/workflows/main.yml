@@ -47,3 +47,38 @@ jobs:
           tags: |
             abdullahhamada7/flask-k8s:latest
             abdullahhamada7/flask-k8s:${{ github.sha }}
+
+      - name: Update Manifest File
+        run: |
+          kubectl set image deployment/myapp-deploy myapp=abdullahhamada7/flask-k8s:${{ github.sha }} --local -o yaml > k8s/deploy.yml.new
+          mv k8s/deploy.yml.new k8s/deploy.yml
+
+      - name: Deploy to Kubernetes
+        uses: appleboy/k8s-action@v0.2.0
+        with:
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+          manifests: |
+            ./k8s/deploy.yml
+            ./k8s/svc.yml
+
+      - name: Verify Deployment
+        run: |
+          echo "Waiting for pods to be ready..."
+          kubectl wait --for=condition=Ready pod -l app=myapp --timeout=120s
+          echo "Pods are ready!"
+      
+      - name: Commit Updated Manifest
+        if: success()
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add k8s/deploy.yml
+          
+          if git diff --staged --quiet; then
+            echo "No changes to the manifest to commit."
+          else
+            # Add [skip ci] to the commit message to prevent an infinite loop
+            git commit -m "Update deployment image to ${{ github.sha }} [skip ci]"
+            git push
+          fi
+
