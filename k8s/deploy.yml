@@ -7,13 +7,16 @@ spec:
   selector:
     matchLabels:
       app: myapp
+  strategy: {}
   template:
     metadata:
       labels:
         app: myapp
     spec:
       containers:
-      - name: myapp
-        image: docker.io/abdullahhamada7/flask-k8s:latest
+      - image: abdullahhamada7/flask-k8s:fdcbe7b1d6b5ece7f1e85c2c59b80a93c5076ad6
+        name: myapp
         ports:
         - containerPort: 5000
+        resources: {}
+status: {}
